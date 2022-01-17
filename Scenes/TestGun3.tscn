@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=2]
+
+[sub_resource type="CubeMesh" id=1]
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_color = Color( 0.180392, 0.454902, 0.141176, 1 )
+
+[sub_resource type="CubeMesh" id=3]
+
+[node name="TestGun3" type="Spatial"]
+transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0 )
+
+[node name="MeshInstance2" type="MeshInstance" parent="."]
+transform = Transform( 1.04065, 0, 0, 0, 0.176982, 0, 0, 0, 0.17169, 0.23008, 0.139243, 0 )
+mesh = SubResource( 1 )
+skeleton = NodePath("../MeshInstance")
+material/0 = SubResource( 2 )
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+transform = Transform( 0.238796, 0, 0, 0, 0.0904381, 0.0295036, 0, -0.0277861, 0.0960282, 0.249759, 0.252561, -0.204584 )
+mesh = SubResource( 3 )
+material/0 = SubResource( 2 )
+
+[node name="MeshInstance3" type="MeshInstance" parent="."]
+transform = Transform( 0.0575782, 0.0141703, 0, -0.0156383, 0.137259, -0.00659638, -0.00206799, 0.0181509, 0.0498824, -0.0423749, -0.102634, -0.0690451 )
+mesh = SubResource( 1 )
+skeleton = NodePath("../MeshInstance")
+material/0 = SubResource( 2 )
