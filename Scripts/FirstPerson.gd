@@ -64,6 +64,10 @@ export var sway_right : Vector3
 export var sway_up : Vector3
 export var sway_down : Vector3
 export var sway_default : Vector3
+var aiming = false
+var ads_lerp = 20
+export var hand_default_position : Vector3
+export var hand_ads_position : Vector3
 
 # (( variables referring to "gun" pertain to current weapon functionality )) #
 # (( variables referring to "current, primary, secondary, sidearm" pertain to stored data for equipped slots )) #
@@ -190,21 +194,18 @@ func _process(delta):
 	weapon_select()
 	current_ammo(current)
 	
-	
-	
-	
 	# weapon sway from mouse movement #
 	if mouse_mov_x != null:
-		if mouse_mov_x > sway_threshold:
+		if mouse_mov_x > sway_threshold and aiming == false:
 			hand.rotation = hand.rotation.linear_interpolate(sway_left, sway_lerp * delta)
-		elif mouse_mov_x < -sway_threshold:
+		elif mouse_mov_x < -sway_threshold and aiming == false:
 			hand.rotation = hand.rotation.linear_interpolate(sway_right, sway_lerp * delta)
 		else:
 			hand.rotation = hand.rotation.linear_interpolate(sway_default, sway_lerp * delta)
 	if mouse_mov_y != null:
-		if mouse_mov_y > sway_threshold:
+		if mouse_mov_y > sway_threshold and aiming == false:
 			hand.rotation = hand.rotation.linear_interpolate(sway_up, sway_lerp * delta)
-		elif mouse_mov_y < -sway_threshold:
+		elif mouse_mov_y < -sway_threshold and aiming == false:
 			hand.rotation = hand.rotation.linear_interpolate(sway_down, sway_lerp * delta)
 		else:
 			hand.rotation = hand.rotation.linear_interpolate(sway_default, sway_lerp * delta)
@@ -238,6 +239,7 @@ func _physics_process(delta):
 	# head bonking, using raycast #
 	if head_bonker.is_colliding():
 		head_bonked = true
+		cant_sprint = true
 	else:
 		head_bonked = false
 	if head_bonked:
@@ -251,7 +253,6 @@ func _physics_process(delta):
 	elif not head_bonked:
 		player_collision.shape.height += crouch_drop_speed * delta
 		cant_jump = false
-		cant_sprint = false
 	player_collision.shape.height = clamp(player_collision.shape.height, crouch_height, default_height)
 	
 	
@@ -288,6 +289,16 @@ func _physics_process(delta):
 	# call shoot functions #
 	if Input.is_action_just_pressed("fire") and ready_to_fire == true and current_empty == false and reloading == false:
 		fire_weapon()
+	if Input.is_action_pressed("ads"):
+		aiming = true
+		cant_jump = true
+		cant_sprint = true
+		hand.transform.origin = hand.transform.origin.linear_interpolate(hand_ads_position, ads_lerp * delta)
+	if not Input.is_action_pressed("ads"):
+		aiming = false
+		cant_jump = false
+		cant_sprint = false
+		hand.transform.origin = hand.transform.origin.linear_interpolate(hand_default_position, ads_lerp * delta)
 	if Input.is_action_just_pressed("reload"):
 		reload(current)
 	

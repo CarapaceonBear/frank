@@ -13,6 +13,8 @@ height = 1.5
 [node name="FirstPerson" type="KinematicBody"]
 collision_layer = 0
 script = ExtResource( 1 )
+hand_default_position = Vector3( 0.471, 0.321, -0.514 )
+hand_ads_position = Vector3( 0, 0.669, -0.699 )
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0 )
@@ -90,7 +92,7 @@ mesh = SubResource( 2 )
 material/0 = null
 
 [node name="Hand" type="Spatial" parent="Head"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.471012, 0.320877, -0.51404 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.471, 0.321, -0.514 )
 
 [node name="HandLocation" type="Spatial" parent="Head"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.471012, 0.320877, -0.51404 )
