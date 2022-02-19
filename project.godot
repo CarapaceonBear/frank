@@ -10,7 +10,8 @@ config_version=4
 
 [application]
 
-config/name="FPS testing"
+config/name="Frank"
+run/main_scene="res://Scenes/Level_01.tscn"
 config/icon="res://icon.png"
 
 [input]

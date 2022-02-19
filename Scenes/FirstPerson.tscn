@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://Scripts/FirstPerson.gd" type="Script" id=1]
 
@@ -8,13 +8,11 @@ height = 1.5
 
 [sub_resource type="CubeMesh" id=3]
 
-[sub_resource type="CubeMesh" id=2]
-
 [node name="FirstPerson" type="KinematicBody"]
 collision_layer = 0
 script = ExtResource( 1 )
-hand_default_position = Vector3( 0.471, 0.321, -0.514 )
-hand_ads_position = Vector3( 0, 0.669, -0.699 )
+hand_default_position = Vector3( 0, 0.635, -0.209 )
+hand_ads_position = Vector3( 0, 0.635, 0 )
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0 )
@@ -24,13 +22,14 @@ shape = SubResource( 1 )
 
 [node name="Camera" type="Camera" parent="Head"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.787506, 0 )
+fov = 50.0
 
 [node name="AimCast" type="RayCast" parent="Head/Camera"]
 enabled = true
 cast_to = Vector3( 0, 0, -1000 )
 
 [node name="MeshInstance" type="MeshInstance" parent="Head/Camera/AimCast"]
-transform = Transform( 0.0111757, 0, 0, 0, 0.0111757, 0, 0, 0, 1, 0, 0, -1.77383 )
+transform = Transform( 0.000917921, 0, 0, 0, 0.000917921, 0, 0, 0, 2.35436, 0, 0, -1.92528 )
 mesh = SubResource( 3 )
 material/0 = null
 
@@ -85,32 +84,32 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TestGun" type="MeshInstance" parent="Head"]
-transform = Transform( 0.0975359, 0, 0, 0, 0.0975359, 0, 0, 0, 0.643667, 0.432773, 0.402276, -0.32735 )
-visible = false
-mesh = SubResource( 2 )
-material/0 = null
-
 [node name="Hand" type="Spatial" parent="Head"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.471, 0.321, -0.514 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.249, 0.591, -0.36 )
 
 [node name="HandLocation" type="Spatial" parent="Head"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.471012, 0.320877, -0.51404 )
+
+[node name="GunADSPos" type="Position3D" parent="Head/HandLocation"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.484266, 0.405548, -1.06784 )
 
 [node name="Gun1Pos" type="Position3D" parent="Head/HandLocation"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0300514, -1.57983 )
 
 [node name="Gun2Pos" type="Position3D" parent="Head/HandLocation"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.08616e-07, 0.249581, -1.10472 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.137023, -0.0319355, -1.36933 )
 
 [node name="Gun3Pos" type="Position3D" parent="Head/HandLocation"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.19209e-07, 0.180609, -1.33317 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.103386, 0.180609, -1.74647 )
 
 [node name="Gun4Pos" type="Position3D" parent="Head/HandLocation"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.98023e-08, 0.079267, -0.43322 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.102321, 0.0690763, -0.797434 )
 
 [node name="Gun5Pos" type="Position3D" parent="Head/HandLocation"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2.98023e-08, 0.079267, -0.811907 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.053616, 0.079267, -1.1864 )
+
+[node name="BoltActionPos" type="Position3D" parent="Head/HandLocation"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22099, 0.331352, -1.37561 )
 
 [node name="Muzzle" type="Spatial" parent="Head"]
 transform = Transform( 0.0975359, 0, 0, 0, 0.0975359, 0, 0, 0, 0.643667, 0.432773, 0.402276, -0.98389 )
