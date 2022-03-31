@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Scripts/FirstPerson.gd" type="Script" id=1]
+[ext_resource path="res://Scenes/Draw3D.gd" type="Script" id=2]
 
 [sub_resource type="CapsuleShape" id=1]
 radius = 0.5
@@ -8,8 +9,14 @@ height = 1.5
 
 [sub_resource type="CubeMesh" id=3]
 
+[sub_resource type="CapsuleShape" id=4]
+height = 0.002
+
+[sub_resource type="SpatialMaterial" id=5]
+
 [node name="FirstPerson" type="KinematicBody"]
-collision_layer = 0
+collision_layer = 17
+collision_mask = 5
 script = ExtResource( 1 )
 hand_default_position = Vector3( 0, 0.635, -0.209 )
 hand_ads_position = Vector3( 0, 0.635, 0 )
@@ -27,6 +34,8 @@ fov = 50.0
 [node name="AimCast" type="RayCast" parent="Head/Camera"]
 enabled = true
 cast_to = Vector3( 0, 0, -1000 )
+collision_mask = 3
+collide_with_areas = true
 
 [node name="MeshInstance" type="MeshInstance" parent="Head/Camera/AimCast"]
 transform = Transform( 0.000917921, 0, 0, 0, 0.000917921, 0, 0, 0, 2.35436, 0, 0, -1.92528 )
@@ -38,6 +47,7 @@ enabled = true
 cast_to = Vector3( 0, 0, -2 )
 
 [node name="ShotgunContainer" type="Spatial" parent="Head/Camera"]
+visible = false
 
 [node name="ShotgunCast" type="RayCast" parent="Head/Camera/ShotgunContainer"]
 cast_to = Vector3( 0, 0, -100 )
@@ -64,6 +74,26 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="HealthCounter" type="TextEdit" parent="Head/Camera/Control"]
+margin_left = 14.0
+margin_top = 16.0
+margin_right = 54.0
+margin_bottom = 56.0
+text = "00"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CurrencyCounter" type="TextEdit" parent="Head/Camera/Control"]
+margin_left = 15.0
+margin_top = 56.0
+margin_right = 55.0
+margin_bottom = 96.0
+text = "000"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="MagCounter" type="TextEdit" parent="Head/Camera/Control"]
 margin_left = 14.0
 margin_top = 506.0
@@ -83,6 +113,17 @@ text = "000"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="InteractablesRegion" type="Area" parent="Head/Camera"]
+collision_layer = 8
+collision_mask = 8
+
+[node name="CollisionShape" type="CollisionShape" parent="Head/Camera/InteractablesRegion"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.35567e-07, -0.0882664, -0.966068 )
+shape = SubResource( 4 )
+
+[node name="Muzzle" type="Spatial" parent="Head/Camera"]
+transform = Transform( 0.0975359, 0, 0, 0, 0.0975359, 0, 0, 0, 0.643667, 0.432773, -0.38523, -0.98389 )
 
 [node name="Hand" type="Spatial" parent="Head"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.249, 0.591, -0.36 )
@@ -111,9 +152,6 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.053616, 0.079267, -1.1864 )
 [node name="BoltActionPos" type="Position3D" parent="Head/HandLocation"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22099, 0.331352, -1.37561 )
 
-[node name="Muzzle" type="Spatial" parent="Head"]
-transform = Transform( 0.0975359, 0, 0, 0, 0.0975359, 0, 0, 0, 0.643667, 0.432773, 0.402276, -0.98389 )
-
 [node name="GroundCheck" type="RayCast" parent="."]
 enabled = true
 cast_to = Vector3( 0, -1.5, 0 )
@@ -125,3 +163,11 @@ cast_to = Vector3( 0, 1, 0 )
 
 [node name="FireRate" type="Timer" parent="."]
 one_shot = true
+
+[node name="Draw3D" type="ImmediateGeometry" parent="."]
+material_override = SubResource( 5 )
+cast_shadow = 0
+script = ExtResource( 2 )
+
+[connection signal="body_entered" from="Head/Camera/InteractablesRegion" to="." method="_on_InteractablesRegion_body_entered"]
+[connection signal="body_exited" from="Head/Camera/InteractablesRegion" to="." method="_on_InteractablesRegion_body_exited"]

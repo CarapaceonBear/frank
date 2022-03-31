@@ -1,34 +1,6 @@
 extends KinematicBody
 
 # ----------------------- #
-# TO DO LIST
-# ----------------------- #
-#
-# REANIMATE RIFLE AT 70FOV
-# RESET CAM FOV TO 70/50
-# set up animation signals
-# debug whatever is going on with muzzle position
-#
-# * assault rifle functionality
-# * inaccuracy for hip fire
-# * barricades
-# * learn decal node
-# * damage and health, damage indicators
-# * buying weapons + opening doors, buying ammo at resupply
-# * weapon upgrades
-# * melee attack
-# * research culling and LOD
-# * block out level
-# * look into multiplayer
-#
-# * plan progression and weapons / powerups in detail
-# * establish art style
-# * concept weapons, location and enemies
-# * model assets
-# * learn substance painter
-
-
-# ----------------------- #
 #        VARIABLES        #
 # ----------------------- #
 
@@ -40,6 +12,8 @@ export var crouch_speed = 0.6
 var crouch_drop_speed = 8
 var sprint_multiplier = 1
 export var sprint_speed = 1.8
+var ads_multiplier = 1
+var ads_speed = 0.2
 
 var default_height = 1.5
 var crouch_height = 0.3
@@ -50,7 +24,7 @@ var air_acceleration = 1
 var default_acceleration = 1
 
 export var gravity = 20
-export var jump = 10
+export var jump = 6
 var double_jump = true
 export var double_jump_active = false
 var full_contact = false
@@ -78,6 +52,11 @@ var ads_lerp = 20
 export var hand_default_position : Vector3
 export var hand_ads_position : Vector3
 var fov = {"default": 50, "ads": 40}
+
+# variables for interactables
+var barricade
+var interacting_barricade = false
+var fixing_barricade = false
 
 # (( variables referring to "gun" pertain to current weapon functionality )) #
 # (( variables referring to "current, primary, secondary, sidearm" pertain to stored data for equipped slots )) #
@@ -125,7 +104,8 @@ var sidearm_empty = false
 var current_location
 signal update_location(current_location)
 var player_health = 100
-var currency = 0
+var currency = 150
+var pickup_cost = 0
 
 # preloading player components #
 onready var head = $Head
@@ -135,13 +115,17 @@ onready var player_collision = $CollisionShape
 onready var head_bonker = $HeadBonker
 onready var aimcast = $Head/Camera/AimCast
 onready var shotgun_container = $Head/Camera/ShotgunContainer
-onready var muzzle = $Head/Muzzle
+onready var muzzle = $Head/Camera/Muzzle
 onready var projectile = preload("res://scenes/Bullet.tscn")
+onready var bullet_hole = preload("res://scenes/BulletDecal.tscn")
+onready var debug_raycast = $Draw3D
 onready var reach = $Head/Camera/Reach
 onready var hand = $Head/Hand
 onready var hand_location = $Head/HandLocation
+onready var health_counter = $Head/Camera/Control/HealthCounter
 onready var mag_counter = $Head/Camera/Control/MagCounter
 onready var ammo_counter = $Head/Camera/Control/AmmoCounter
+onready var currency_counter = $Head/Camera/Control/CurrencyCounter
 
 onready var tracer = $Head/Camera/AimCast/MeshInstance
 
@@ -149,7 +133,7 @@ onready var tracer = $Head/Camera/AimCast/MeshInstance
 onready var pistol1 = preload("res://scenes/TestGun4.tscn")
 onready var pistol1_pos = $Head/HandLocation/Gun4Pos
 var pistol1_stats = {"starting_pos": Vector3(0.556, 0.296, -0.775), "ads_pos": Vector3(0.005, 0.635, -0.209), 
-					 "type": 1, "damage": 10, "velocity": 0, "fire_rate": 0.4, "mag_size": 12, "ammo": 60, "reload_speed": 1, "weight": 0, "spread": 0}
+					 "type": 1, "damage": 30, "velocity": 0, "fire_rate": 0.4, "mag_size": 12, "ammo": 60, "reload_speed": 1, "weight": 0, "spread": 0}
 onready var weapon1 = preload("res://scenes/TestGun1.tscn")
 onready var weapon1_pos = $Head/HandLocation/Gun1Pos
 var weapon1_stats = {"starting_pos": Vector3(0.471, 0.321, -0.514), "ads_pos": Vector3(0, 0.669, -0.699), 
@@ -185,6 +169,7 @@ func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	default_acceleration = acceleration
 	weapon_pickup(sidearm)
+	health_counter.text = str(player_health)
 	
 	randomize()
 	for r in shotgun_container.get_children():
@@ -192,9 +177,6 @@ func _ready():
 		r.cast_to.y = rand_range(gun_spread, -gun_spread)
 	
 	pathfinding_timer()
-
-
-
 
 # ----------------------- #
 #    PER FRAME PROCESS    #
@@ -242,7 +224,7 @@ func _input(event):
 			cant_jump = true
 			cant_sprint = true
 			muzzle.global_transform = ads_pos.global_transform
-			#tracer.global_transform.origin = muzzle.global_transform.origin
+			tracer.global_transform.origin = muzzle.global_transform.origin
 		if event.is_action_released("ads"):
 			aiming = false
 			cant_jump = false
@@ -272,9 +254,11 @@ func _process(delta):
 	if Input.is_action_pressed("ads"):
 		hand.transform.origin = hand.transform.origin.linear_interpolate(hand_ads_position, ads_lerp * delta)
 		camera.fov = lerp(camera.fov, fov["ads"], ads_lerp * delta)
+		ads_multiplier = ads_speed
 	elif not Input.is_action_pressed("ads"):
 		hand.transform.origin = hand.transform.origin.linear_interpolate(hand_default_position, ads_lerp * delta)
 		camera.fov = lerp(camera.fov, fov["default"], ads_lerp * delta)
+		ads_multiplier = 1
 
 # player movement #
 func _physics_process(delta):
@@ -347,7 +331,7 @@ func _physics_process(delta):
 	elif Input.is_action_pressed("move_right"):
 		direction += transform.basis.x
 	direction = direction.normalized()
-	velocity = velocity.linear_interpolate(direction * speed * sprint_multiplier * crouch_multiplier, acceleration * delta)
+	velocity = velocity.linear_interpolate(direction * speed * sprint_multiplier * crouch_multiplier * ads_multiplier, acceleration * delta)
 	movement.z = velocity.z + gravity_vector.z
 	movement.x = velocity.x + gravity_vector.x
 	movement.y = gravity_vector.y
@@ -359,9 +343,10 @@ func _physics_process(delta):
 	if Input.is_action_just_pressed("reload"):
 		reload(current)
 
-	
 	# weapon pickups, detect which weapon "reach" raycast is colliding with #
 	if reach.is_colliding():
+		if reach.get_collider().has_method("barricade_fix") and Input.is_action_pressed("use"):
+			reach.get_collider().baricade_fix()
 		if reach.get_collider().get_name() == "TestGun1_depot":
 			pickup_weapon = 1
 		elif reach.get_collider().get_name() == "TestGun2_depot":
@@ -372,10 +357,22 @@ func _physics_process(delta):
 			pickup_weapon = 4
 		elif reach.get_collider().get_name() == "bolt_action_depot":
 			pickup_weapon = 20
+			pickup_cost = 150
 	else:
 		pickup_weapon = 0
+
+	# interactables
+	if interacting_barricade and Input.is_action_pressed("use") and currency >= 20:
+		if not fixing_barricade and barricade.is_in_group("damaged_barricade"):
+			fixing_barricade = true
+			currency -= 20
+			currency_counter.text = str(currency)
+			barricade.recieve_interaction()
+			yield(get_tree().create_timer(1), "timeout")
+			fixing_barricade = false
+
 	# which slot the new weapon goes in, depending on empty slots or held weapon #
-	if Input.is_action_just_pressed("use") and pickup_weapon != 0:
+	if Input.is_action_just_pressed("use") and pickup_weapon != 0 and currency >= pickup_cost:
 		if (current == 1 and secondary != 0) or primary == 0:
 			primary = pickup_weapon
 			current = 1
@@ -386,7 +383,8 @@ func _physics_process(delta):
 		weapon_visibility(current)
 		weapon_stats(current)
 		ready_to_fire = true
-
+		currency -= pickup_cost
+		currency_counter.text = str(currency)
 
 # ----------------------- #
 #    CALLED PROCESSES     #
@@ -399,7 +397,15 @@ func pathfinding_timer():
 		yield(get_tree().create_timer(.5), "timeout")
 		current_location = head.global_transform.origin
 		emit_signal("update_location", current_location)
+		debug_raycast.draw_raycast(muzzle.transform.origin, aimcast.cast_to, "blue")
 
+func take_damage(value):
+	player_health -= value
+	health_counter.text = str(player_health)
+
+func recieve_points(value):
+	currency += value
+	currency_counter.text = str(currency)
 
 # shooting #
  # drawing from stat dictionary of currently held weapon #
@@ -407,16 +413,43 @@ func fire_weapon():
 	cant_reload = true
 	match(gun_type):
 		1:
-			#var b = bullet_decal.instance()
+#			var b = bullet_hole.instance()
+#			var surface_up = Vector3(0,1,0)
+#			var surface_down = Vector3(0,1,0)
 			var bullet = get_world().direct_space_state
-			var collision = bullet.intersect_ray(muzzle.transform.origin, aimcast.get_collision_point())
-			if collision:
+			var collision = bullet.intersect_ray(muzzle.translation, aimcast.get_collision_point())
+			
+			var hitboxes = bullet.intersect_ray(muzzle.translation, aimcast.get_collision_point(), [], 2, false, true)
+			if hitboxes:
+				var hit = hitboxes.collider
+				if hit.is_in_group("Headbox"):
+					hit.get_parent().lose_health(gun_damage * 2)
+					recieve_points(10)
+				elif hit.is_in_group("Bodybox"):
+					hit.get_parent().lose_health(gun_damage)
+					recieve_points(5)
+				
+				debug_raycast.draw_raycast(muzzle.translation, hitboxes.position, "red")
+#				hit.add_child(b)
+#				b.translation = hitboxes.position
+#				if (hitboxes.normal == surface_up) or (hitboxes.normal == surface_down):
+#					b.look_at(hitboxes.position + hitboxes.normal, Vector3.RIGHT)
+#				else:
+#					b.look_at(hitboxes.position + hitboxes.normal, Vector3.DOWN)
+				
+				
+			elif collision:
+				# hit environment
 				var target = collision.collider
-				if target.is_in_group("Enemy"):
-					target.lose_health(gun_damage)
-				#target.add_child(b)
-				#b.global_transform.origin = aimcast.get_collision_point()
-				#b.look_at(aimcast.get_collision_point() + aimcast.get_collision_normal(), Vector3.UP)
+				
+				debug_raycast.draw_raycast(muzzle.translation, collision.position, "blue")
+#				target.add_child(b)
+#				b.translation = collision.position
+#				if (collision.normal == surface_up) or (collision.normal == surface_down):
+#					b.look_at(collision.position + collision.normal, Vector3.RIGHT)
+#				else:
+#					b.look_at(collision.position + collision.normal, Vector3.DOWN)
+
 		# decals require significant rework, look into decal node #
 		2:
 			var p = projectile.instance()
@@ -428,16 +461,16 @@ func fire_weapon():
 		# 3 for assault rifles #
 		4:
 			for r in shotgun_container.get_children():
-				var b = bullet_decal.instance()
+				#var b = bullet_decal.instance()
 				r.cast_to.x = rand_range(gun_spread, -gun_spread)
 				r.cast_to.y = rand_range(gun_spread, -gun_spread)
 				r.force_raycast_update()
 				if r.is_colliding():
 					if r.get_collider().is_in_group("Enemy"):
 						r.get_collider().health -= gun_damage
-					r.get_collider().add_child(b)
-					b.global_transform.origin = r.get_collision_point()
-					b.look_at(r.get_collision_point() + r.get_collision_normal(), Vector3.UP)
+					#r.get_collider().add_child(b)
+					#b.global_transform.origin = r.get_collision_point()
+					#b.look_at(r.get_collision_point() + r.get_collision_normal(), Vector3.UP)
 				r.enabled = false
 	expend_bullet(current)
 	
@@ -692,7 +725,7 @@ func muzzle_position(ID):
 			muzzle.global_transform = pistol1_pos.global_transform
 		20:
 			muzzle.global_transform = bolt_action_pos.global_transform
-	#tracer.global_transform.origin = muzzle.global_transform.origin
+	tracer.global_transform.origin = muzzle.global_transform.origin
 
 func weapon_animation(ID, animation):
 	var which_slot
@@ -705,4 +738,15 @@ func weapon_animation(ID, animation):
 			which_slot = sidearm_model
 	which_slot.get_node("AnimationPlayer").play(animation)
 
+# ---------------------------- #
+#  SIGNALS FROM INTERACTABLES  #
+# ---------------------------- #
 
+func _on_InteractablesRegion_body_entered(body):
+	if body.is_in_group("damaged_barricade"):
+		interacting_barricade = true
+		barricade = body
+
+func _on_InteractablesRegion_body_exited(body):
+	if body.has_method("recieve_interaction"):
+		interacting_barricade = false

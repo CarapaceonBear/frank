@@ -1,0 +1,37 @@
+
+# ----------------------- #
+# TO DO LIST
+# ----------------------- #
+#
+# REANIMATE RIFLE AT 70FOV
+# RESET CAM FOV TO 70/50
+# set up animation signals
+# - state machine with animation tree
+# debug whatever is going on with muzzle position
+#
+# * fail state
+# * assault rifle functionality
+# * inaccuracy for hip fire
+# * learn decal node
+# * damage indicators
+# * opening doors, buying ammo at resupply
+# * weapon upgrades
+# * melee attack
+# * research culling and LOD
+# * block out level
+# * look into multiplayer
+#
+# * plan progression and weapons / powerups in detail
+# * establish art style
+# * concept weapons, location and enemies
+# * model assets
+# * learn substance painter
+
+
+
+COLLISION LAYERS:
+	1 - world, player, enemies
+	2 - enemy hitboxes, weapon raycasts
+	3 - barricades (enemy blockers while not broken)
+	4 - interactables
+	5 - zombie targets for damage

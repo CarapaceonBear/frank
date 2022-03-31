@@ -1,0 +1,126 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://Scripts/Barricade.gd" type="Script" id=1]
+[ext_resource path="res://Scripts/EnemyBlocker.gd" type="Script" id=2]
+[ext_resource path="res://Scripts/Interactable.gd" type="Script" id=3]
+
+[sub_resource type="BoxShape" id=8]
+extents = Vector3( 3.00261, 0.886997, 0.500217 )
+
+[sub_resource type="CubeMesh" id=2]
+
+[sub_resource type="CubeMesh" id=3]
+
+[sub_resource type="CubeMesh" id=4]
+
+[sub_resource type="Animation" id=5]
+resource_name = "break"
+tracks/0/type = "transform"
+tracks/0/path = NodePath("MeshInstance/MeshInstance3")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = PoolRealArray( 0, 1, 0, 4, 0.40731, 0, 0, 0, 1, 1, 1, 0.121535, 0.2, 1, 0, 2.00835, 1.86086, 0, 0, 0, 1, 1, 0.474214, 0.645291, 0.5, 1, 0, -0.979127, 2.2384, 0, 0, 0, 1, 1, 0.122377, 0.999897 )
+
+[sub_resource type="Animation" id=6]
+resource_name = "default"
+tracks/0/type = "transform"
+tracks/0/path = NodePath("MeshInstance/MeshInstance3")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = PoolRealArray( 0, 1, 0, 4, 0.40731, 0, 0, 0, 1, 1, 1, 0.121535 )
+
+[sub_resource type="BoxShape" id=1]
+extents = Vector3( 3.00261, 1, 1 )
+
+[sub_resource type="BoxShape" id=9]
+extents = Vector3( 1.74246, 2.34981, 0.500134 )
+
+[sub_resource type="ViewportTexture" id=7]
+viewport_path = NodePath("Spatial/Viewport")
+
+[node name="Barricade" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="PlayerBlocker" type="StaticBody" parent="."]
+transform = Transform( 0.66, 0, 0, 0, 0.66, 0, 0, 0, 0.66, 0, 0, 0 )
+collision_layer = 4
+collision_mask = 4
+
+[node name="CollisionShape" type="CollisionShape" parent="PlayerBlocker"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.10234, 0 )
+shape = SubResource( 8 )
+
+[node name="MeshInstance" type="MeshInstance" parent="PlayerBlocker"]
+transform = Transform( 3.01326, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
+mesh = SubResource( 2 )
+material/0 = null
+
+[node name="MeshInstance" type="MeshInstance" parent="PlayerBlocker/MeshInstance"]
+transform = Transform( 0.0824799, 0, 0, 0, 3.0845, 0, 0, 0, 0.240066, -0.880629, 3.75642, 0 )
+mesh = SubResource( 3 )
+material/0 = null
+
+[node name="MeshInstance2" type="MeshInstance" parent="PlayerBlocker/MeshInstance"]
+transform = Transform( 0.0824799, 0, 0, 0, 3.0845, 0, 0, 0, 0.240066, 0.871372, 3.75642, 0 )
+mesh = SubResource( 3 )
+material/0 = null
+
+[node name="MeshInstance3" type="MeshInstance" parent="PlayerBlocker/MeshInstance"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 0.121535, 0, 4, 0.40731 )
+mesh = SubResource( 4 )
+material/0 = null
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="PlayerBlocker"]
+anims/break = SubResource( 5 )
+anims/default = SubResource( 6 )
+
+[node name="EnemyBlocker" type="StaticBody" parent="."]
+transform = Transform( 0.66, 0, 0, 0, 0.66, 0, 0, 0, 0.66, 0, 0, 0 )
+collision_layer = 17
+
+[node name="CollisionShape2" type="CollisionShape" parent="EnemyBlocker"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.00005, 0 )
+shape = SubResource( 1 )
+
+[node name="EnemyTarget" type="StaticBody" parent="."]
+transform = Transform( 0.66, 0, 0, 0, 0.66, 0, 0, 0, 0.66, 0, 1.32856, 0 )
+collision_layer = 16
+collision_mask = 16
+script = ExtResource( 2 )
+
+[node name="CollisionShape2" type="CollisionShape" parent="EnemyTarget"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.00005, 0 )
+shape = SubResource( 1 )
+
+[node name="Interactable" type="StaticBody" parent="."]
+collision_layer = 8
+collision_mask = 8
+script = ExtResource( 3 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Interactable"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.51052, 0 )
+shape = SubResource( 9 )
+
+[node name="Spatial" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.11762, 0.579349 )
+
+[node name="Viewport" type="Viewport" parent="Spatial"]
+size = Vector2( 300, 25 )
+transparent_bg = true
+
+[node name="Health" type="Label" parent="Spatial/Viewport"]
+anchor_right = 1.0
+text = "temp"
+align = 1
+
+[node name="Sprite3D" type="Sprite3D" parent="Spatial"]
+transform = Transform( 3, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0 )
+flip_v = true
+texture = SubResource( 7 )
+
+[node name="Target" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.593577 )

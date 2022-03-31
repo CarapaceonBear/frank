@@ -16,3 +16,6 @@ transform = Transform( -1, 5.68434e-14, 1.81993e-06, 1.76673e-06, -0.24002, 0.97
 
 [node name="Bone" parent="Root/Armature/main" index="3"]
 transform = Transform( -1, 0, 8.74228e-08, 8.74228e-08, 0, 1, 0, 1, 0, 3.56411e-15, 0.516444, -0.0654856 )
+
+[node name="AnimationTree" type="AnimationTree" parent="." index="8"]
+anim_player = NodePath("../AnimationPlayer")
